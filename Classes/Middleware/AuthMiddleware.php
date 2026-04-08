@@ -22,7 +22,8 @@ class AuthMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly AuthService $authService,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly SiteFinder $siteFinder
     ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -58,16 +59,23 @@ class AuthMiddleware implements MiddlewareInterface
             ->withPath($requestUri->getPath())
             ->withQuery($requestUri->getQuery());
 
+        try {
+            $site = $this->siteFinder->getSiteByPageId($authService->getLoginPageId());
+            $language = $site->getDefaultLanguage();
+        } catch (SiteNotFoundException) {
+            /** @var Site $site */
+            $site = $request->getAttribute('site');
+            $language = $request->getAttribute('language');
+        }
+        
         $queryParams = [
-            '_language' => $request->getAttribute('language'),
+            '_language' => $language,
             'tx_pagepassword_form' => [
                 'uid' => $request->getAttribute('routing')->getPageId(),
                 'redirect_uri' => $redirectUri->__toString(),
             ],
         ];
 
-        /** @var Site $site */
-        $site = $request->getAttribute('site');
         $uri = $site->getRouter()
             ->generateUri($authService->getLoginPageId(), $queryParams, '', RouterInterface::ABSOLUTE_PATH);
 
