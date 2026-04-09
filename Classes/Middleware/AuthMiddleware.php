@@ -12,9 +12,11 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Rovitch\PagePassword\Event\BeforeAccessIsGrantedEvent;
 use Rovitch\PagePassword\Service\AuthService;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
 use TYPO3\CMS\Core\Http\RedirectResponse;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Routing\RouterInterface;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Site\Entity\Site;
 
 class AuthMiddleware implements MiddlewareInterface
